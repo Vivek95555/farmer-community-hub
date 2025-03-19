@@ -1,4 +1,3 @@
-
 import { NavBar } from "@/components/NavBar";
 import { EcoPassport } from "@/components/EcoPassport";
 import { useAuth } from "@/contexts/AuthContext";

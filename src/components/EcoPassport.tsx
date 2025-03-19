@@ -1,8 +1,7 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Trophy, Leaf, Award, BadgeCheck } from "lucide-react";
-import { QRCodeGenerator } from "./QRCodeGenerator";
+import QRCodeGenerator from "./QRCodeGenerator";
 
 export function EcoPassport() {
   const { profile } = useAuth();
