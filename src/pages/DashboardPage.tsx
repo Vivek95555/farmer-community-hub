@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Mock data for the dashboard
 const mockFeaturedProducts: Product[] = [
   {
     id: "p1",
@@ -100,7 +99,6 @@ export default function DashboardPage() {
   const userRole = profile?.role || "consumer";
   
   useEffect(() => {
-    // Scroll to top when the component mounts
     window.scrollTo(0, 0);
   }, [location]);
 
@@ -137,7 +135,6 @@ export default function DashboardPage() {
           </TabsList>
           
           <TabsContent value="overview" className="space-y-8">
-            {/* Stats Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Card className="hover-scale">
                 <CardHeader className="pb-2">
@@ -222,7 +219,6 @@ export default function DashboardPage() {
               </Card>
             </div>
             
-            {/* Featured Products Section */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -253,7 +249,6 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
             
-            {/* Featured Farmers Section (for consumers only) */}
             {userRole === "consumer" && (
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -280,7 +275,6 @@ export default function DashboardPage() {
               </Card>
             )}
             
-            {/* Recent Activity Section (for farmers only) */}
             {userRole === "farmer" && (
               <Card>
                 <CardHeader>
@@ -358,7 +352,6 @@ export default function DashboardPage() {
               <Badge variant="outline" className="cursor-pointer">Honey & Preserves</Badge>
             </div>
             
-            {/* Products grid would go here with filter functionality */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array(8)
                 .fill(0)
@@ -383,7 +376,6 @@ export default function DashboardPage() {
                 : "View your shopping history and favorite products."}
             </p>
             
-            {/* Placeholder for charts and analytics */}
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
