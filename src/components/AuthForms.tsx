@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -25,9 +26,6 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 
 // Schema for sign in form
 const signInSchema = z.object({
@@ -61,9 +59,6 @@ export function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const { signIn } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -78,22 +73,19 @@ export function SignInForm() {
     setIsLoading(true);
     
     try {
-      const { error } = await signIn(data.email, data.password);
+      // TODO: Integrate with Supabase authentication
+      console.log("Sign in data:", data);
       
-      if (error) {
-        console.error("Sign in error:", error);
-        toast.error(error.message || "Failed to sign in. Please check your credentials.");
+      // For now, simulate a successful sign in
+      setTimeout(() => {
+        toast.success("Signed in successfully");
+        // Redirect based on role (to be implemented)
+        window.location.href = "/dashboard";
         setIsLoading(false);
-        return;
-      }
-      
-      // If coming from a specific page, redirect there, otherwise go to dashboard
-      const from = (location.state as any)?.from?.pathname || "/dashboard";
-      toast.success("Signed in successfully");
-      navigate(from, { replace: true });
+      }, 1000);
     } catch (error) {
-      console.error("Sign in error:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Login error:", error);
+      toast.error("Failed to sign in. Please check your credentials.");
       setIsLoading(false);
     }
   };
@@ -215,8 +207,6 @@ export function SignInForm() {
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signUp } = useAuth();
-  const navigate = useNavigate();
 
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
@@ -232,20 +222,19 @@ export function SignUpForm() {
     setIsLoading(true);
     
     try {
-      const { error } = await signUp(data.email, data.password, data.name, data.role);
+      // TODO: Integrate with Supabase authentication
+      console.log("Sign up data:", data);
       
-      if (error) {
-        console.error("Sign up error:", error);
-        toast.error(error.message || "Failed to create account. Please try again.");
+      // For now, simulate a successful sign up
+      setTimeout(() => {
+        toast.success("Account created successfully");
+        // Redirect to sign in page
+        window.location.href = "/signin";
         setIsLoading(false);
-        return;
-      }
-      
-      toast.success("Account created successfully! Please sign in.");
-      navigate("/signin");
+      }, 1000);
     } catch (error) {
-      console.error("Sign up error:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Signup error:", error);
+      toast.error("Failed to create account. Please try again.");
       setIsLoading(false);
     }
   };
@@ -388,7 +377,6 @@ export function SignUpForm() {
 
 export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const form = useForm<ForgotPasswordValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -401,20 +389,17 @@ export function ForgotPasswordForm() {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      // TODO: Integrate with Supabase password reset
+      console.log("Forgot password email:", data.email);
       
-      if (error) {
-        toast.error(error.message || "Failed to send password reset email. Please try again.");
-      } else {
+      // For now, simulate a successful password reset email send
+      setTimeout(() => {
         toast.success("Password reset email sent. Please check your inbox.");
-      }
-
-      setIsLoading(false);
+        setIsLoading(false);
+      }, 1000);
     } catch (error) {
       console.error("Password reset error:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      toast.error("Failed to send password reset email. Please try again.");
       setIsLoading(false);
     }
   };
