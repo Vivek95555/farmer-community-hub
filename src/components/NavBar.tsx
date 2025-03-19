@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   Home, 
@@ -25,6 +25,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavItemProps {
   path: string;
@@ -54,19 +55,12 @@ const NavItem = ({ path, label, icon: Icon, currentPath, onClick }: NavItemProps
   );
 };
 
-interface NavBarProps {
-  userRole?: "farmer" | "consumer" | null;
-}
-
-export function NavBar({ userRole }: NavBarProps) {
+export function NavBar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-
-  // Mock user data until auth is implemented
-  const user = userRole 
-    ? { name: userRole === "farmer" ? "Jane Farmer" : "John Consumer", email: "user@example.com", role: userRole }
-    : null;
+  const navigate = useNavigate();
+  const { user, profile, signOut, isLoading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,12 +73,9 @@ export function NavBar({ userRole }: NavBarProps) {
     };
   }, []);
 
-  const handleLogout = () => {
-    // TODO: Implement actual logout with Supabase
-    toast.success("Logged out successfully");
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 500);
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
   };
 
   const navItems = [
@@ -124,14 +115,14 @@ export function NavBar({ userRole }: NavBarProps) {
         </nav>
         
         <div className="flex items-center gap-2">
-          {user ? (
+          {user && profile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-10 w-10 border-2 border-primary/10">
-                    <AvatarImage src="" alt={user.name} />
+                    <AvatarImage src={profile.image || ""} alt={profile.name} />
                     <AvatarFallback className="bg-primary/10 text-primary">
-                      {user.name.charAt(0)}
+                      {profile.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -139,9 +130,9 @@ export function NavBar({ userRole }: NavBarProps) {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-sm font-medium leading-none">{profile.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                    <p className="text-xs leading-none text-primary mt-1 capitalize">{user.role}</p>
+                    <p className="text-xs leading-none text-primary mt-1 capitalize">{profile.role}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -151,7 +142,7 @@ export function NavBar({ userRole }: NavBarProps) {
                     <span>Profile</span>
                   </Link>
                 </DropdownMenuItem>
-                {user.role === "farmer" && (
+                {profile.role === "farmer" && (
                   <DropdownMenuItem asChild>
                     <Link to="/ecopassport" className="flex items-center gap-2 cursor-pointer">
                       <Leaf size={16} />
@@ -166,7 +157,7 @@ export function NavBar({ userRole }: NavBarProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
+          ) : !isLoading && (
             <div className="flex items-center gap-2">
               <Button asChild variant="ghost" size="sm" className="hidden sm:flex">
                 <Link to="/signin">Sign In</Link>

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, CircleDollarSign } from "lucide-react";
+import { Search, Plus, CircleDollarSign, Loader2 } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -20,139 +20,22 @@ import {
   DialogTrigger 
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProductService, ProductInput } from "@/components/ProductService";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-// Mock data
-const mockProducts: Product[] = [
-  {
-    id: "p1",
-    name: "Organic Heirloom Tomatoes",
-    description: "Freshly harvested heirloom tomatoes grown using organic practices.",
-    price: 4.99,
-    image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=1000&auto=format&fit=crop",
-    category: "Vegetables",
-    farmer: {
-      id: "f1",
-      name: "Green Valley Farm",
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-    isOrganic: true,
-  },
-  {
-    id: "p2",
-    name: "Free-Range Eggs",
-    description: "Eggs from free-range chickens raised on natural feed without antibiotics.",
-    price: 5.99,
-    image: "https://images.unsplash.com/photo-1498654077810-12c21d4d6dc3?q=80&w=1000&auto=format&fit=crop",
-    category: "Dairy & Eggs",
-    farmer: {
-      id: "f2",
-      name: "Sunny Meadow Farm",
-      image: "https://randomuser.me/api/portraits/women/44.jpg",
-    },
-    isOrganic: true,
-  },
-  {
-    id: "p3",
-    name: "Raw Wildflower Honey",
-    description: "Unprocessed honey collected from wildflower fields, rich in natural enzymes.",
-    price: 12.99,
-    image: "https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=1000&auto=format&fit=crop",
-    category: "Honey & Preserves",
-    farmer: {
-      id: "f3",
-      name: "Beecroft Apiaries",
-      image: "https://randomuser.me/api/portraits/men/67.jpg",
-    },
-    isOrganic: true,
-  },
-  {
-    id: "p4",
-    name: "Grass-Fed Ground Beef",
-    description: "Lean ground beef from grass-fed cattle, no hormones or antibiotics.",
-    price: 8.99,
-    image: "https://images.unsplash.com/photo-1602470520998-f4a52199a3d6?q=80&w=1000&auto=format&fit=crop",
-    category: "Meat & Poultry",
-    farmer: {
-      id: "f4",
-      name: "Highland Cattle Ranch",
-      image: "https://randomuser.me/api/portraits/men/45.jpg",
-    },
-    isOrganic: true,
-  },
-  {
-    id: "p5",
-    name: "Fresh Strawberries",
-    description: "Sweet, juicy strawberries picked at peak ripeness.",
-    price: 6.49,
-    image: "https://images.unsplash.com/photo-1518635017498-87f514b751ba?q=80&w=1000&auto=format&fit=crop",
-    category: "Fruits",
-    farmer: {
-      id: "f1",
-      name: "Green Valley Farm",
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-    isOrganic: true,
-  },
-  {
-    id: "p6",
-    name: "Artisan Sourdough Bread",
-    description: "Handcrafted sourdough bread made with organic flour and traditional fermentation.",
-    price: 7.99,
-    image: "https://images.unsplash.com/photo-1549931319-a545dcf3bc7c?q=80&w=1000&auto=format&fit=crop",
-    category: "Bakery",
-    farmer: {
-      id: "f5",
-      name: "Hearth & Grain",
-      image: "https://randomuser.me/api/portraits/women/28.jpg",
-    },
-    isOrganic: false,
-  },
-  {
-    id: "p7",
-    name: "Fresh Basil",
-    description: "Aromatic fresh basil, perfect for Italian dishes and homemade pesto.",
-    price: 3.49,
-    image: "https://images.unsplash.com/photo-1527792492728-08d07d021a9b?q=80&w=1000&auto=format&fit=crop",
-    category: "Herbs",
-    farmer: {
-      id: "f6",
-      name: "Lavender Hills",
-      image: "https://randomuser.me/api/portraits/women/33.jpg",
-    },
-    isOrganic: true,
-  },
-  {
-    id: "p8",
-    name: "Goat Cheese",
-    description: "Creamy goat cheese made from the milk of free-range goats.",
-    price: 9.99,
-    image: "https://images.unsplash.com/photo-1559561853-08451507cbe7?q=80&w=1000&auto=format&fit=crop",
-    category: "Dairy & Eggs",
-    farmer: {
-      id: "f4",
-      name: "Blue Creek Dairy",
-      image: "https://randomuser.me/api/portraits/women/22.jpg",
-    },
-    isOrganic: false,
-  },
-];
-
-// Extract unique categories
-const categories = Array.from(new Set(mockProducts.map((p) => p.category)));
-
-interface MarketplacePageProps {
-  userRole?: "farmer" | "consumer" | null;
-}
-
-const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
+const MarketplacePage = () => {
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50]);
   const [organicOnly, setOrganicOnly] = useState(false);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(mockProducts);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isAddProductDialogOpen, setIsAddProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const { profile } = useAuth();
+  const productService = useProductService();
+  const queryClient = useQueryClient();
   
   // New product form state
   const [newProduct, setNewProduct] = useState({
@@ -162,6 +45,55 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
     category: "",
     isOrganic: false,
     image: "",
+  });
+  
+  // Query to fetch products
+  const { data: products = [], isLoading: isLoadingProducts } = useQuery({
+    queryKey: ['products'],
+    queryFn: productService.fetchProducts,
+  });
+
+  // Extract unique categories from actual products
+  const categories = Array.from(new Set(products.map((p) => p.category)));
+  
+  // Mutations for create, update, and delete
+  const createProductMutation = useMutation({
+    mutationFn: (productData: ProductInput) => productService.createProduct(productData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success("Product added successfully");
+      setIsAddProductDialogOpen(false);
+      resetForm();
+    },
+    onError: (error) => {
+      toast.error(`Failed to add product: ${error.message}`);
+    },
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: ({ id, product }: { id: string; product: ProductInput }) => 
+      productService.updateProduct(id, product),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success("Product updated successfully");
+      setIsAddProductDialogOpen(false);
+      setEditingProduct(null);
+      resetForm();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update product: ${error.message}`);
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: (id: string) => productService.deleteProduct(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success("Product deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete product: ${error.message}`);
+    },
   });
   
   useEffect(() => {
@@ -186,7 +118,7 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
   
   useEffect(() => {
     // Apply filters
-    let results = mockProducts;
+    let results = products;
     
     // Filter by search term
     if (searchTerm) {
@@ -218,7 +150,7 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
     }
     
     setFilteredProducts(results);
-  }, [searchTerm, selectedCategories, priceRange, organicOnly]);
+  }, [products, searchTerm, selectedCategories, priceRange, organicOnly]);
   
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) =>
@@ -235,31 +167,7 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
     setOrganicOnly(false);
   };
   
-  const handleAddProduct = () => {
-    // Validate form
-    if (!newProduct.name || !newProduct.description || !newProduct.price || !newProduct.category) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    
-    // Create new product or update existing
-    const price = parseFloat(newProduct.price);
-    if (isNaN(price) || price <= 0) {
-      toast.error("Please enter a valid price");
-      return;
-    }
-    
-    if (editingProduct) {
-      // Handle product update (in a real app, this would update the database)
-      toast.success(`Product "${newProduct.name}" updated successfully`);
-    } else {
-      // Handle product creation (in a real app, this would create in the database)
-      toast.success(`Product "${newProduct.name}" added successfully`);
-    }
-    
-    // Close dialog and reset form
-    setIsAddProductDialogOpen(false);
-    setEditingProduct(null);
+  const resetForm = () => {
     setNewProduct({
       name: "",
       description: "",
@@ -270,13 +178,44 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
     });
   };
   
+  const handleAddProduct = () => {
+    // Validate form
+    if (!newProduct.name || !newProduct.description || !newProduct.price || !newProduct.category) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    // Check price is valid
+    const price = parseFloat(newProduct.price);
+    if (isNaN(price) || price <= 0) {
+      toast.error("Please enter a valid price");
+      return;
+    }
+    
+    const productData: ProductInput = {
+      name: newProduct.name,
+      description: newProduct.description,
+      price: price,
+      category: newProduct.category,
+      is_organic: newProduct.isOrganic,
+      image: newProduct.image || undefined,
+    };
+    
+    if (editingProduct) {
+      updateProductMutation.mutate({ id: editingProduct.id, product: productData });
+    } else {
+      createProductMutation.mutate(productData);
+    }
+  };
+  
   const handleProductEdit = (product: Product) => {
     setEditingProduct(product);
   };
   
   const handleProductDelete = (productId: string) => {
-    // In a real app, this would delete from the database
-    toast.success("Product deleted successfully");
+    if (confirm("Are you sure you want to delete this product?")) {
+      deleteProductMutation.mutate(productId);
+    }
   };
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -287,22 +226,25 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
     }));
   };
 
+  // Determine if the user is a farmer for showing add/edit/delete functionality
+  const isFarmer = profile?.role === "farmer";
+
   return (
     <div className="min-h-screen bg-muted/20">
-      <NavBar userRole={userRole} />
+      <NavBar />
       
       <main className="container px-4 py-8 pt-32 md:px-6 md:py-12 md:pt-32">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Marketplace</h1>
             <p className="mt-1 text-muted-foreground">
-              {userRole === "farmer"
+              {isFarmer
                 ? "Manage your products and track their performance"
                 : "Browse and purchase fresh products directly from farmers"}
             </p>
           </div>
           
-          {userRole === "farmer" && (
+          {isFarmer && (
             <Dialog open={isAddProductDialogOpen} onOpenChange={setIsAddProductDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -379,11 +321,23 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
                         }
                       >
                         <option value="">Select a category</option>
-                        {categories.map((category) => (
-                          <option key={category} value={category}>
-                            {category}
-                          </option>
-                        ))}
+                        {categories.length > 0 ? (
+                          categories.map((category) => (
+                            <option key={category} value={category}>
+                              {category}
+                            </option>
+                          ))
+                        ) : (
+                          <>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Dairy & Eggs">Dairy & Eggs</option>
+                            <option value="Meat & Poultry">Meat & Poultry</option>
+                            <option value="Bakery">Bakery</option>
+                            <option value="Herbs">Herbs</option>
+                            <option value="Honey & Preserves">Honey & Preserves</option>
+                          </>
+                        )}
                       </select>
                     </div>
                   </div>
@@ -417,7 +371,7 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
                       placeholder="https://example.com/image.jpg"
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Enter a URL or upload an image (upload feature coming soon)
+                      Enter a URL for your product image
                     </p>
                   </div>
                 </div>
@@ -426,10 +380,17 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
                   <Button variant="outline" onClick={() => {
                     setIsAddProductDialogOpen(false);
                     setEditingProduct(null);
+                    resetForm();
                   }}>
                     Cancel
                   </Button>
-                  <Button onClick={handleAddProduct}>
+                  <Button 
+                    onClick={handleAddProduct}
+                    disabled={createProductMutation.isPending || updateProductMutation.isPending}
+                  >
+                    {(createProductMutation.isPending || updateProductMutation.isPending) && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     {editingProduct ? "Update Product" : "Add Product"}
                   </Button>
                 </DialogFooter>
@@ -458,16 +419,20 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
                 <div>
                   <Label className="mb-2 block">Categories</Label>
                   <div className="flex flex-wrap gap-2">
-                    {categories.map((category) => (
-                      <Badge
-                        key={category}
-                        variant={selectedCategories.includes(category) ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => toggleCategory(category)}
-                      >
-                        {category}
-                      </Badge>
-                    ))}
+                    {categories.length > 0 ? (
+                      categories.map((category) => (
+                        <Badge
+                          key={category}
+                          variant={selectedCategories.includes(category) ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => toggleCategory(category)}
+                        >
+                          {category}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No categories available</p>
+                    )}
                   </div>
                 </div>
                 
@@ -512,7 +477,9 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
           <div>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-muted-foreground">
-                Showing {filteredProducts.length} products
+                {isLoadingProducts 
+                  ? "Loading products..." 
+                  : `Showing ${filteredProducts.length} products`}
               </p>
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm">
@@ -521,13 +488,18 @@ const MarketplacePage = ({ userRole = "farmer" }: MarketplacePageProps) => {
               </div>
             </div>
             
-            {filteredProducts.length > 0 ? (
+            {isLoadingProducts ? (
+              <div className="flex h-60 flex-col items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="mt-2 text-muted-foreground">Loading products...</p>
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={product}
-                    isFarmerView={userRole === "farmer"}
+                    isFarmerView={isFarmer && product.farmer.id === profile?.id}
                     onEdit={handleProductEdit}
                     onDelete={handleProductDelete}
                   />
