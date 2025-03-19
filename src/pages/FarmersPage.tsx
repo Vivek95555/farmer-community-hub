@@ -22,6 +22,7 @@ const FarmersPage = () => {
   const [allFarmers, setAllFarmers] = useState<Farmer[]>([]);
   const [allCategories, setAllCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showProducts, setShowProducts] = useState(true);
   
   useEffect(() => {
     // Scroll to top when the component mounts
@@ -65,6 +66,13 @@ const FarmersPage = () => {
             new Set(farmerProducts.map((product) => product.category))
           );
           
+          // Get product previews (limited to top products)
+          const productPreviews = farmerProducts.slice(0, 3).map(product => ({
+            id: product.id,
+            name: product.name,
+            image: product.image || "",
+          }));
+          
           return {
             id: farmer.id,
             name: farmer.name || "Unknown Farmer",
@@ -74,6 +82,7 @@ const FarmersPage = () => {
             bio: farmer.bio || "No bio available",
             productCategories,
             productCount: farmerProducts.length,
+            products: productPreviews,
           };
         });
         
@@ -208,6 +217,17 @@ const FarmersPage = () => {
                     />
                   </div>
                   
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="show-products"
+                      checked={showProducts}
+                      onChange={(e) => setShowProducts(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <Label htmlFor="show-products">Show product previews</Label>
+                  </div>
+                  
                   <Button variant="outline" className="w-full" onClick={resetFilters}>
                     Reset Filters
                   </Button>
@@ -231,7 +251,11 @@ const FarmersPage = () => {
               {filteredFarmers.length > 0 ? (
                 <div className="grid gap-6 sm:grid-cols-2">
                   {filteredFarmers.map((farmer) => (
-                    <FarmerCard key={farmer.id} farmer={farmer} />
+                    <FarmerCard 
+                      key={farmer.id} 
+                      farmer={farmer} 
+                      showProducts={showProducts}
+                    />
                   ))}
                 </div>
               ) : (

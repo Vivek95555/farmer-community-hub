@@ -1,5 +1,5 @@
 
-import { Star, MapPin } from "lucide-react";
+import { Star, MapPin, Package } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -24,14 +24,20 @@ export interface Farmer {
   bio: string;
   productCategories: string[];
   productCount: number;
+  products?: {
+    id: string;
+    name: string;
+    image: string;
+  }[];
 }
 
 interface FarmerCardProps {
   farmer: Farmer;
   className?: string;
+  showProducts?: boolean;
 }
 
-export function FarmerCard({ farmer, className }: FarmerCardProps) {
+export function FarmerCard({ farmer, className, showProducts = false }: FarmerCardProps) {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   return (
@@ -64,12 +70,17 @@ export function FarmerCard({ farmer, className }: FarmerCardProps) {
                 <Star className="mr-1 h-4 w-4 text-amber-500" />
                 <span>{farmer.rating} / 5</span>
               </div>
+              <div className="flex items-center">
+                <Package className="mr-1 h-4 w-4 text-primary/80" />
+                <span>{farmer.productCount} products</span>
+              </div>
             </div>
             <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{farmer.bio}</p>
           </div>
         </div>
+        
         <div className="mt-4">
-          <h4 className="text-sm font-medium mb-2">Products</h4>
+          <h4 className="text-sm font-medium mb-2">Categories</h4>
           <div className="flex flex-wrap gap-1">
             {farmer.productCategories.map((category) => (
               <Badge key={category} variant="outline" className="bg-secondary">
@@ -78,6 +89,26 @@ export function FarmerCard({ farmer, className }: FarmerCardProps) {
             ))}
           </div>
         </div>
+        
+        {showProducts && farmer.products && farmer.products.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-2">Top Products</h4>
+            <div className="grid grid-cols-3 gap-2">
+              {farmer.products.slice(0, 3).map(product => (
+                <div key={product.id} className="aspect-square rounded-md overflow-hidden bg-muted relative group">
+                  <img 
+                    src={product.image || "https://images.unsplash.com/photo-1575218823251-6a63ef7c7bf6?q=80&w=1000&auto=format&fit=crop"} 
+                    alt={product.name}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-white text-xs font-medium p-1">{product.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <CardFooter className="border-t bg-muted/20 px-6 py-3">
         <div className="flex w-full items-center justify-between">
