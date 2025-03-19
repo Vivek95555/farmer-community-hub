@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import QRCode from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Download, Share2 } from "lucide-react";
@@ -76,11 +76,10 @@ export function QRCodeGenerator({
     <Card className={cn("overflow-hidden bg-transparent shadow-none", className)}>
       <CardContent className="flex flex-col items-center p-6">
         <div className="mb-4 rounded-xl border bg-white p-4 shadow-subtle">
-          <QRCode
+          <QRCodeCanvas
             value={qrValue}
             size={size}
             level="H"
-            renderAs="canvas"
             includeMargin={true}
             imageSettings={{
               src: "", // Can add a logo in the center if needed
