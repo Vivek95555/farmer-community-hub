@@ -8,7 +8,6 @@ import LandingPage from "./pages/LandingPage";
 import { SignInPage, SignUpPage, ForgotPasswordPage } from "./pages/AuthPages";
 import DashboardPage from "./pages/DashboardPage";
 import FarmersPage from "./pages/FarmersPage";
-import FarmerProfilePage from "./pages/FarmerProfilePage";
 import MarketplacePage from "./pages/MarketplacePage";
 import { SustainabilityPage, CommunityPage } from "./pages/StaticPages";
 import { ProfilePage, EcoPassportPage } from "./pages/ProfilePages";
@@ -31,8 +30,7 @@ const App = () => (
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/farmers" element={<FarmersPage />} />
-            <Route path="/farmers/:id" element={<FarmerProfilePage />} />
+            <Route path="/farmers" element={<ProtectedRoute><FarmersPage /></ProtectedRoute>} />
             <Route path="/marketplace" element={<ProtectedRoute><MarketplacePage /></ProtectedRoute>} />
             <Route path="/sustainability" element={<ProtectedRoute><SustainabilityPage /></ProtectedRoute>} />
             <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
