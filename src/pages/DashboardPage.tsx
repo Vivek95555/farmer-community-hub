@@ -22,7 +22,7 @@ import {
   BarChart3,
   ChevronRight 
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Mock data for the dashboard
 const mockFeaturedProducts: Product[] = [
@@ -93,14 +93,11 @@ const mockFeaturedFarmers: Farmer[] = [
   },
 ];
 
-interface DashboardPageProps {
-  userRole?: "farmer" | "consumer" | null;
-}
-
 export default function DashboardPage() {
   const { user, profile } = useAuth();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
+  const userRole = profile?.role || "consumer";
   
   useEffect(() => {
     // Scroll to top when the component mounts
@@ -109,7 +106,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-muted/20">
-      <NavBar userRole={userRole} />
+      <NavBar />
       
       <main className="container px-4 py-8 pt-32 md:px-6 md:py-12 md:pt-32">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
