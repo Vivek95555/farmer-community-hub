@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -26,7 +27,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 // Schema for sign in form
@@ -178,12 +179,12 @@ export function SignInForm() {
                   Remember me
                 </label>
               </div>
-              <a
-                href="/forgot-password"
+              <Link
+                to="/forgot-password"
                 className="text-sm font-medium text-primary hover:underline"
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
             <Button className="w-full" type="submit" disabled={isLoading}>
               {isLoading ? (
@@ -203,9 +204,9 @@ export function SignInForm() {
         </div>
         <div className="text-sm text-center">
           Don't have an account?{" "}
-          <a href="/signup" className="font-medium text-primary hover:underline">
+          <Link to="/signup" className="font-medium text-primary hover:underline">
             Sign up
-          </a>
+          </Link>
         </div>
       </CardFooter>
     </Card>
@@ -241,7 +242,7 @@ export function SignUpForm() {
         return;
       }
       
-      toast.success("Account created successfully! Please sign in.");
+      toast.success("Account created successfully! Please check your email to confirm your account.");
       navigate("/signin");
     } catch (error) {
       console.error("Sign up error:", error);
@@ -377,9 +378,9 @@ export function SignUpForm() {
       <CardFooter className="flex flex-col space-y-4">
         <div className="text-sm text-center">
           Already have an account?{" "}
-          <a href="/signin" className="font-medium text-primary hover:underline">
+          <Link to="/signin" className="font-medium text-primary hover:underline">
             Sign in
-          </a>
+          </Link>
         </div>
       </CardFooter>
     </Card>
@@ -388,6 +389,7 @@ export function SignUpForm() {
 
 export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<ForgotPasswordValues>({
@@ -408,6 +410,7 @@ export function ForgotPasswordForm() {
       if (error) {
         toast.error(error.message || "Failed to send password reset email. Please try again.");
       } else {
+        setIsSubmitted(true);
         toast.success("Password reset email sent. Please check your inbox.");
       }
 
@@ -424,42 +427,64 @@ export function ForgotPasswordForm() {
       <CardHeader className="space-y-2">
         <CardTitle className="text-3xl font-semibold text-center">Forgot Password</CardTitle>
         <CardDescription className="text-center">
-          Enter your email and we'll send you a link to reset your password
+          {isSubmitted 
+            ? "Check your email for a password reset link" 
+            : "Enter your email and we'll send you a link to reset your password"}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="glass-input"
-                      placeholder="your.email@example.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              Send Reset Link
+        {isSubmitted ? (
+          <div className="text-center py-4">
+            <p className="mb-6 text-muted-foreground">
+              If you don't see the email in your inbox, please check your spam folder.
+            </p>
+            <Button 
+              onClick={() => form.reset()} 
+              className="mr-2"
+            >
+              Try again
             </Button>
-          </form>
-        </Form>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/signin')}
+            >
+              Back to sign in
+            </Button>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="glass-input"
+                        placeholder="your.email@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button className="w-full" type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Send Reset Link
+              </Button>
+            </form>
+          </Form>
+        )}
       </CardContent>
       <CardFooter className="flex justify-center">
-        <a href="/signin" className="text-sm text-primary hover:underline">
+        <Link to="/signin" className="text-sm text-primary hover:underline">
           Back to Sign In
-        </a>
+        </Link>
       </CardFooter>
     </Card>
   );

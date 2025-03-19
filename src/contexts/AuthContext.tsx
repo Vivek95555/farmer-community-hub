@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -101,18 +101,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string, role: "farmer" | "consumer") => {
     try {
-      const { error } = await supabase.auth.signUp({
+      // Sign up the user with Supabase Auth
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            name,
-            role,
-          },
-        },
       });
-      
-      return { error };
+
+      if (signUpError) {
+        return { error: signUpError };
+      }
+
+      // Create a profile record if sign up was successful
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: data.user.id,
+              name,
+              role,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+
+        if (profileError) {
+          console.error("Error creating profile:", profileError);
+          return { error: profileError };
+        }
+      }
+
+      return { error: null };
     } catch (error) {
       console.error("Error signing up:", error);
       return { error };
