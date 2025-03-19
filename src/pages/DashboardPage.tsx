@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
@@ -23,6 +22,7 @@ import {
   BarChart3,
   ChevronRight 
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 // Mock data for the dashboard
 const mockFeaturedProducts: Product[] = [
@@ -97,7 +97,8 @@ interface DashboardPageProps {
   userRole?: "farmer" | "consumer" | null;
 }
 
-const DashboardPage = ({ userRole = "farmer" }: DashboardPageProps) => {
+export default function DashboardPage() {
+  const { user, profile } = useAuth();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
   
@@ -418,6 +419,4 @@ const DashboardPage = ({ userRole = "farmer" }: DashboardPageProps) => {
       </main>
     </div>
   );
-};
-
-export default DashboardPage;
+}
